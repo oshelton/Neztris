@@ -7,6 +7,7 @@
 - [HaxeFlixel](https://haxeflixel.com/)
 
 **Simple Analysis:**
+
 Godot:
 
 | Pros                                     | Cons                                                                      |
@@ -48,6 +49,7 @@ HaxeFlixel:
 To give each a fair shake go through some tutorials with each one before going to the challenge.
 
 **Test Tetris Challenge:**
+
 Example image:
 
 ![](./tetris_example.png)
