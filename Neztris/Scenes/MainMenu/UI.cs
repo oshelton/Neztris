@@ -1,0 +1,281 @@
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using Nez;
+using Nez.UI;
+using Neztris.Shared;
+using Neztris.Utils;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Neztris.Scenes.MainMenu
+{
+	internal static class UI
+	{
+		public static UICanvas AddMenus(this Entity entity, Action onPlay, Action onExit)
+		{
+			var canvas = new UICanvas();
+			canvas.IsFullScreen = false;
+			canvas.RenderLayer = c_screenSpaceRenderLayer;
+			entity.AddComponent(canvas);
+
+			var uiState = new UIState();
+
+			uiState.UpdateStateFromOptions();
+			uiState.MainMenu = CreateMainMenu(canvas, uiState, onPlay, onExit);
+			uiState.OptionsMenu = CreateOptionsMenu(canvas, uiState);
+
+			entity.AddComponent(uiState);
+
+			return canvas;
+		}
+
+		private static Table CreateMainMenu(UICanvas canvas, UIState state, Action onPlay, Action onExit)
+		{
+			var table = new Table();
+			table.Pad(16);
+			table.SetFillParent(true);
+			table.Center();
+			canvas.Stage.AddElement(table);
+
+			table.Row().SetFillX().Pad(0.0f, 0.0f, 32.0f, 0.0f);
+
+			var titleLabel = new Label("Neztris");
+			titleLabel.SetFontScale(3.0f);
+			titleLabel.SetFontColor(Color.CadetBlue);
+			table.Add(titleLabel);
+
+			table.Row().SetFillX().Pad(0.0f, 16.0f, 8.0f, 16.0f);
+
+			var playButton = new TextButton("Play", s_defaultSkin);
+			playButton.OnClicked += button => onPlay();
+			table.Add(playButton);
+
+			var tooltip = new TextTooltip("Start the game", playButton, s_defaultSkin);
+			table.AddElement(tooltip);
+
+			table.Row().SetFillX().Pad(0.0f, 16.0f, 8.0f, 16.0f);
+
+			var optionsButton = new TextButton("Options", s_defaultSkin);
+			optionsButton.OnClicked += button => state.IsOptionsMenuVisible = true;
+			table.Add(optionsButton);
+
+			tooltip = new TextTooltip("Open the options menu", optionsButton, s_defaultSkin);
+			table.AddElement(tooltip);
+
+			table.Row().SetFillX().Pad(0.0f, 16.0f, 8.0f, 16.0f);
+
+			var exitButton = new TextButton("Exit", s_defaultSkin);
+			exitButton.OnClicked += button => onExit();
+			table.Add(exitButton);
+
+			tooltip = new TextTooltip("Exit the game", exitButton, s_defaultSkin);
+			table.AddElement(tooltip);
+
+			playButton.EnableExplicitFocusableControl(exitButton, optionsButton, null, null);
+			optionsButton.EnableExplicitFocusableControl(playButton, exitButton, null, null);
+			exitButton.EnableExplicitFocusableControl(optionsButton, playButton, null, null);
+
+			canvas.Stage.SetGamepadFocusElement(playButton);
+			state.PlayButton = playButton;
+			state.OptionsButton = optionsButton;
+
+			return table;
+		}
+
+		private static Dialog CreateOptionsMenu(UICanvas canvas, UIState state)
+		{
+			var dialog = new Dialog("Options", s_defaultSkin);
+			dialog.Pad(16);
+			dialog.SetMovable(false);
+			dialog.SetIsVisible(false);
+			dialog.SetWidth(250 + 32);
+			canvas.Stage.AddElement(dialog);
+
+			var scrollingContent = new Table();
+			scrollingContent.Defaults().SetSpaceBottom(8.0f);
+			scrollingContent.Defaults().SetFillX();
+			scrollingContent.Top();
+
+			AddSectionLabel(scrollingContent, "Audio");
+			var musicSlider = AddSliderOption(scrollingContent, "Music", GameOptions.Instance.MusicVolume, val => state.MusicVolume = val);
+			var soundSlider = AddSliderOption(scrollingContent, "Sound Effects", GameOptions.Instance.SoundVolume, val => state.SoundVolume = val);
+			AddSectionLabel(scrollingContent, "Controls");
+			foreach (var action in GameOptions.Instance.InputActions.GetAvailableActions())
+			{
+				AddInputActionOption(scrollingContent, state, action);
+			}
+
+			var scrollContainer = new ScrollPane(scrollingContent, s_defaultSkin);
+			scrollContainer.FillParent = true;
+			dialog.GetContentTable().Add(scrollContainer);
+
+			var saveButton = new TextButton("Save", s_defaultSkin);
+			saveButton.OnClicked += button =>
+			{
+				state.UpdateOptions();
+				state.IsOptionsMenuVisible = false;
+			};
+			dialog.GetButtonTable().Add(saveButton);
+
+			var backButton = new TextButton("Back", s_defaultSkin);
+			backButton.OnClicked += button => state.IsOptionsMenuVisible = false;
+			dialog.GetButtonTable().Add(backButton);
+
+			musicSlider.EnableExplicitFocusableControl(backButton, soundSlider, null, null);
+			soundSlider.EnableExplicitFocusableControl(musicSlider, saveButton, null, null);
+			saveButton.EnableExplicitFocusableControl(soundSlider, musicSlider, null, backButton);
+			backButton.EnableExplicitFocusableControl(soundSlider, musicSlider, saveButton, null);
+
+			dialog.SetPosition(
+				Game.ViewportWidth / 2 - dialog.width / 2,
+				Game.ViewportHeight / 2 - dialog.height / 2
+			);
+			state.MusicSlider = musicSlider;
+			state.SoundSlider = soundSlider;
+
+			return dialog;
+		}
+
+		private static void AddSectionLabel(Table container, string caption)
+		{
+			var label = new Label(caption);
+			label.SetAlignment(Align.Center);
+			container.Add(label).SetColspan(3).SetPadTop(8).SetPadBottom(8);
+
+			container.Row();
+		}
+
+		private static Slider AddSliderOption(Table container, string label, float initialValue, Action<float> updateAction)
+		{
+			container.Add(label).SetAlign(Align.Left);
+
+			container.Add().SetExpandX();
+
+			var slider = new Slider(s_defaultSkin, null, 0, 1, 0.1f);
+			slider.SetValue(initialValue);
+			slider.OnChanged += updateAction;
+			container.Add(slider).SetAlign(Align.Right).SetPadRight(8);
+
+			container.Row();
+
+			return slider;
+		}
+
+		private static void AddInputActionOption(Table container, UIState state, InputAction action)
+		{
+			container.Add(action.Title).SetAlign(Align.Left);
+
+			container.Add().SetExpandX();
+
+			var keyContainer = new Table();
+			keyContainer.Right();
+			keyContainer.Defaults().SetSpaceRight(4);
+
+			var keyLabel = new Label(action.ActualKey.ToString());
+			keyLabel.SetAlignment(Align.Right);
+			keyContainer.Add(keyLabel);
+
+			var editButton = new TextButton("Edit", s_defaultSkin);
+			editButton.OnClicked += button =>
+			{
+				state.OptionsMenu.SetIsVisible(false);
+
+				var reassignDialog = new Dialog("Reassign Action", s_defaultSkin);
+
+				var captionLabel = new Label($"Press any key to use for \"{action.Title}\".\nOr press Escape to cancel.");
+				reassignDialog.GetContentTable().Add(captionLabel).Pad(8);
+
+				reassignDialog.SetPosition(
+					Game.ViewportWidth / 2 - reassignDialog.width / 2,
+					Game.ViewportHeight / 2 - reassignDialog.height / 2
+				);
+				container.GetStage().AddElement(reassignDialog);
+
+				Core.Schedule(0.01f, true, timer => {
+					var pressedKeys = Input.CurrentKeyboardState.GetPressedKeys();
+					if (pressedKeys.Length != 0)
+					{
+						if (!pressedKeys.Contains(Keys.Escape))
+						{
+							action.OverrideKey = pressedKeys[0];
+							keyLabel.SetText(action.ActualKey.ToString());
+						}
+						timer.Stop();
+						reassignDialog.Remove();
+						state.OptionsMenu.SetIsVisible(true);
+					}
+				});
+			};
+			keyContainer.Add(editButton);
+
+			var resetButton = new TextButton("Reset", s_defaultSkin);
+			resetButton.OnClicked += button =>
+			{
+				action.OverrideKey = null;
+				keyLabel.SetText(action.ActualKey.ToString());
+			};
+			keyContainer.Add(resetButton);
+			
+			container.Add(keyContainer).SetFillX().SetAlign(Align.Right);
+
+			container.Row();
+		}
+
+		private sealed class UIState: Component
+		{
+			public Table MainMenu { get; set; }
+			public Dialog OptionsMenu { get; set; }
+
+			public TextButton PlayButton { private get; set; }
+			public TextButton OptionsButton { get; set; }
+
+			public Slider MusicSlider { get; set; }
+			public Slider SoundSlider { get; set; }
+
+			public bool IsOptionsMenuVisible
+			{
+				get => OptionsMenu.IsVisible();
+				set
+				{
+					if (value != OptionsMenu.IsVisible())
+					{
+						var stage = MainMenu.GetStage();
+						stage.UnfocusAll();
+
+						MainMenu.SetIsVisible(!value);
+						OptionsMenu.SetIsVisible(value);
+
+						TooltipManager.GetInstance().HideAll();
+						if (value)
+							stage.SetGamepadFocusElement(MusicSlider);
+						else
+							stage.SetGamepadFocusElement(PlayButton);
+					}
+				}
+			}
+
+			public void UpdateStateFromOptions()
+			{
+				var options = GameOptions.Instance;
+				MusicVolume = options.MusicVolume;
+				SoundVolume = options.SoundVolume;
+			}
+
+			public void UpdateOptions()
+			{
+				var options = GameOptions.Instance;
+				options.MusicVolume = MusicVolume;
+				options.SoundVolume = SoundVolume;
+				options.Save();
+			}
+
+			public float MusicVolume { get; internal set; } = 0.5f;
+			public float SoundVolume { get; internal set; } = 0.5f;
+		};
+
+		private static readonly Skin s_defaultSkin = Skin.CreateDefaultSkin();
+
+		private const int c_screenSpaceRenderLayer = 999;
+	}
+}

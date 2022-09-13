@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32811.315
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Neztris", "Neztris\Neztris.csproj", "{6619C084-14A6-4291-8A37-F93BFD7C97C7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nez", "Nez", "{7174A5B6-682C-4F60-9F1B-B817810115E3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nez.MG38.ImGui", "Nez\Nez.ImGui\Nez.MG38.ImGui.csproj", "{1E10CD72-69E8-434C-ACDA-F87EFFF0E175}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nez.MG38.Persistence", "Nez\Nez.Persistence\Nez.MG38.Persistence.csproj", "{56EA4579-6737-4DD6-8CBA-3DDFE953F108}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nez.MG38", "Nez\Nez.Portable\Nez.MG38.csproj", "{7BD2BABC-EFC4-4879-9C48-F62DFC4BA7CF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{1D5B3D84-4188-4167-9BF9-1290A6B3F41B}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6619C084-14A6-4291-8A37-F93BFD7C97C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6619C084-14A6-4291-8A37-F93BFD7C97C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6619C084-14A6-4291-8A37-F93BFD7C97C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6619C084-14A6-4291-8A37-F93BFD7C97C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E10CD72-69E8-434C-ACDA-F87EFFF0E175}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E10CD72-69E8-434C-ACDA-F87EFFF0E175}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E10CD72-69E8-434C-ACDA-F87EFFF0E175}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E10CD72-69E8-434C-ACDA-F87EFFF0E175}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56EA4579-6737-4DD6-8CBA-3DDFE953F108}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56EA4579-6737-4DD6-8CBA-3DDFE953F108}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56EA4579-6737-4DD6-8CBA-3DDFE953F108}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56EA4579-6737-4DD6-8CBA-3DDFE953F108}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BD2BABC-EFC4-4879-9C48-F62DFC4BA7CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BD2BABC-EFC4-4879-9C48-F62DFC4BA7CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BD2BABC-EFC4-4879-9C48-F62DFC4BA7CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BD2BABC-EFC4-4879-9C48-F62DFC4BA7CF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1E10CD72-69E8-434C-ACDA-F87EFFF0E175} = {7174A5B6-682C-4F60-9F1B-B817810115E3}
+		{56EA4579-6737-4DD6-8CBA-3DDFE953F108} = {7174A5B6-682C-4F60-9F1B-B817810115E3}
+		{7BD2BABC-EFC4-4879-9C48-F62DFC4BA7CF} = {7174A5B6-682C-4F60-9F1B-B817810115E3}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {13A7A906-11F3-427E-B6D7-98B3230A2C05}
+	EndGlobalSection
+EndGlobal
