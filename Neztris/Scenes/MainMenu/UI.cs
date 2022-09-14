@@ -5,8 +5,10 @@ using Nez.UI;
 using Neztris.Shared;
 using Neztris.Utils;
 using System;
+using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace Neztris.Scenes.MainMenu
 {
@@ -182,6 +184,7 @@ namespace Neztris.Scenes.MainMenu
 				state.OptionsMenu.SetIsVisible(false);
 
 				var reassignDialog = new Dialog("Reassign Action", s_defaultSkin);
+				reassignDialog.SetWidth(250);
 
 				var captionLabel = new Label($"Press any key to use for \"{action.Title}\".\nOr press Escape to cancel.");
 				reassignDialog.GetContentTable().Add(captionLabel).Pad(8);
@@ -192,20 +195,30 @@ namespace Neztris.Scenes.MainMenu
 				);
 				container.GetStage().AddElement(reassignDialog);
 
-				Core.Schedule(0.01f, true, timer => {
-					var pressedKeys = Input.CurrentKeyboardState.GetPressedKeys();
-					if (pressedKeys.Length != 0)
+				IEnumerator RebindControl(InputAction action, Label keyLabel, Dialog reassignDialog, UIState state)
+				{
+					while (true)
 					{
-						if (!pressedKeys.Contains(Keys.Escape))
+						var pressedKeys = Input.CurrentKeyboardState.GetPressedKeys();
+						if (pressedKeys.Length != 0)
 						{
-							action.OverrideKey = pressedKeys[0];
-							keyLabel.SetText(action.ActualKey.ToString());
+							if (!pressedKeys.Contains(Keys.Escape))
+							{
+								action.OverrideKey = pressedKeys[0];
+								keyLabel.SetText(action.ActualKey.ToString());
+							}
+							reassignDialog.Remove();
+							state.OptionsMenu.SetIsVisible(true);
+							break;
 						}
-						timer.Stop();
-						reassignDialog.Remove();
-						state.OptionsMenu.SetIsVisible(true);
+						else
+						{
+							yield return null;
+						}
 					}
-				});
+				}
+
+				Core.StartCoroutine(RebindControl(action, keyLabel, reassignDialog, state));
 			};
 			keyContainer.Add(editButton);
 
@@ -221,6 +234,7 @@ namespace Neztris.Scenes.MainMenu
 
 			container.Row();
 		}
+
 
 		private sealed class UIState: Component
 		{
