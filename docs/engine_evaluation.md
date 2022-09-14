@@ -23,6 +23,7 @@ Godot:
 | Most up to date rendering system.        |                                                                           |
 | Highest fidelity pixel art rendering.    |                                                                           |
 | Widest platform support.                 |                                                                           |
+| Best 3d support.                         |                                                                           |
 
 Nez:
 
@@ -32,7 +33,7 @@ Nez:
 | Excellent entity and component system. | Smallest community.                                                               |
 | Easy access to the C# ecosystem.       | MonoGame supporting libraries may require tweaking before they can work with Nez. |
 | Pixel Art support.                     | Would require creating more things by hand.                                       |
-| Battle tested (via monogame).          |                                                                                   |
+| Battle tested (via monogame).          | Limited/rough 3d story.                                                           |
 | Easiest to implement new features in.  |                                                                                   |
 | .NET 6 support.                        |                                                                                   |
 
@@ -43,7 +44,7 @@ HaxeFlixel:
 | Battle tested.                           | Not C#                               |
 | Great language (haxe).                   | Limited activity.                    |
 | Simple structures to get up and running. | Limited third party library support. |
-| Language is very geared towards games.   |                                      |
+| Language is very geared towards games.   | No 3d story.                         |
 | Geared strongly towards pixel art games. |                                      |
 
 To give each a fair shake go through some tutorials with each one before going to the challenge.
