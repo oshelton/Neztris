@@ -22,8 +22,6 @@ namespace Neztris.Scenes.MainMenu
 			entity.AddComponent(canvas);
 
 			var uiState = new UIState();
-
-			uiState.UpdateStateFromOptions();
 			uiState.MainMenu = CreateMainMenu(canvas, uiState, onPlay, onExit);
 			uiState.OptionsMenu = CreateOptionsMenu(canvas, uiState);
 
@@ -47,32 +45,23 @@ namespace Neztris.Scenes.MainMenu
 			titleLabel.SetFontColor(Color.CadetBlue);
 			table.Add(titleLabel);
 
-			table.Row().SetFillX().Pad(0.0f, 16.0f, 8.0f, 16.0f);
+			TextButton CreateAndAddMainMenuButton(string title, string tooltipText, Action<Button> onClickHandler)
+			{
+				table.Row().SetFillX().Pad(0.0f, 16.0f, 8.0f, 16.0f);
 
-			var playButton = new TextButton("Play", s_defaultSkin);
-			playButton.OnClicked += button => onPlay();
-			table.Add(playButton);
+				var button = new TextButton(title, s_defaultSkin);
+				button.OnClicked += onClickHandler;
+				table.Add(button);
 
-			var tooltip = new TextTooltip("Start the game", playButton, s_defaultSkin);
-			table.AddElement(tooltip);
+				var tooltip = new TextTooltip(tooltipText, button, s_defaultSkin);
+				table.AddElement(tooltip);
 
-			table.Row().SetFillX().Pad(0.0f, 16.0f, 8.0f, 16.0f);
+				return button;
+			}
 
-			var optionsButton = new TextButton("Options", s_defaultSkin);
-			optionsButton.OnClicked += button => state.IsOptionsMenuVisible = true;
-			table.Add(optionsButton);
-
-			tooltip = new TextTooltip("Open the options menu", optionsButton, s_defaultSkin);
-			table.AddElement(tooltip);
-
-			table.Row().SetFillX().Pad(0.0f, 16.0f, 8.0f, 16.0f);
-
-			var exitButton = new TextButton("Exit", s_defaultSkin);
-			exitButton.OnClicked += button => onExit();
-			table.Add(exitButton);
-
-			tooltip = new TextTooltip("Exit the game", exitButton, s_defaultSkin);
-			table.AddElement(tooltip);
+			var playButton = CreateAndAddMainMenuButton("Play", "Start the game", button => onPlay());
+			var optionsButton = CreateAndAddMainMenuButton("Options", "Open the options menu", button => state.IsOptionsMenuVisible = true);
+			var exitButton = CreateAndAddMainMenuButton("Exit", "Exit the game", button => onExit());
 
 			playButton.EnableExplicitFocusableControl(exitButton, optionsButton, null, null);
 			optionsButton.EnableExplicitFocusableControl(playButton, exitButton, null, null);
@@ -238,6 +227,13 @@ namespace Neztris.Scenes.MainMenu
 
 		private sealed class UIState: Component
 		{
+			public UIState()
+			{
+				var options = GameOptions.Instance;
+				MusicVolume = options.MusicVolume;
+				SoundVolume = options.SoundVolume;
+			}
+
 			public Table MainMenu { get; set; }
 			public Dialog OptionsMenu { get; set; }
 
@@ -267,13 +263,6 @@ namespace Neztris.Scenes.MainMenu
 							stage.SetGamepadFocusElement(PlayButton);
 					}
 				}
-			}
-
-			public void UpdateStateFromOptions()
-			{
-				var options = GameOptions.Instance;
-				MusicVolume = options.MusicVolume;
-				SoundVolume = options.SoundVolume;
 			}
 
 			public void UpdateOptions()
