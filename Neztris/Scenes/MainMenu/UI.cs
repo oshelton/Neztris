@@ -90,6 +90,102 @@ namespace Neztris.Scenes.MainMenu
 			scrollingContent.Defaults().SetFillX();
 			scrollingContent.Top();
 
+			void AddSectionLabel(Table container, string caption)
+			{
+				var label = new Label(caption);
+				label.SetAlignment(Align.Center);
+				container.Add(label).SetColspan(3).SetPadTop(8).SetPadBottom(8);
+
+				container.Row();
+			}
+
+			Slider AddSliderOption(Table container, string label, float initialValue, Action<float> updateAction)
+			{
+				container.Add(label).SetAlign(Align.Left);
+
+				container.Add().SetExpandX();
+
+				var slider = new Slider(s_defaultSkin, null, 0, 1, 0.1f);
+				slider.SetValue(initialValue);
+				slider.OnChanged += updateAction;
+				container.Add(slider).SetAlign(Align.Right).SetPadRight(8);
+
+				container.Row();
+
+				return slider;
+			}
+
+			void AddInputActionOption(Table container, UIState state, InputAction action)
+			{
+				container.Add(action.Title).SetAlign(Align.Left);
+
+				container.Add().SetExpandX();
+
+				var keyContainer = new Table();
+				keyContainer.Right();
+				keyContainer.Defaults().SetSpaceRight(4);
+
+				var keyLabel = new Label(action.ActualKey.ToString());
+				keyLabel.SetAlignment(Align.Right);
+				keyContainer.Add(keyLabel);
+
+				var editButton = new TextButton("Edit", s_defaultSkin);
+				editButton.OnClicked += button =>
+				{
+					state.OptionsMenu.SetIsVisible(false);
+
+					var reassignDialog = new Dialog("Reassign Action", s_defaultSkin);
+					reassignDialog.SetWidth(250);
+
+					var captionLabel = new Label($"Press any key to use for \"{action.Title}\".\nOr press Escape to cancel.");
+					reassignDialog.GetContentTable().Add(captionLabel).Pad(8);
+
+					reassignDialog.SetPosition(
+						Game.ViewportWidth / 2 - reassignDialog.width / 2,
+						Game.ViewportHeight / 2 - reassignDialog.height / 2
+					);
+					container.GetStage().AddElement(reassignDialog);
+
+					IEnumerator RebindControl(InputAction action, Label keyLabel, Dialog reassignDialog, UIState state)
+					{
+						while (true)
+						{
+							var pressedKeys = Input.CurrentKeyboardState.GetPressedKeys();
+							if (pressedKeys.Length != 0)
+							{
+								if (!pressedKeys.Contains(Keys.Escape))
+								{
+									action.OverrideKey = pressedKeys[0];
+									keyLabel.SetText(action.ActualKey.ToString());
+								}
+								reassignDialog.Remove();
+								state.OptionsMenu.SetIsVisible(true);
+								break;
+							}
+							else
+							{
+								yield return null;
+							}
+						}
+					}
+
+					Core.StartCoroutine(RebindControl(action, keyLabel, reassignDialog, state));
+				};
+				keyContainer.Add(editButton);
+
+				var resetButton = new TextButton("Reset", s_defaultSkin);
+				resetButton.OnClicked += button =>
+				{
+					action.OverrideKey = null;
+					keyLabel.SetText(action.ActualKey.ToString());
+				};
+				keyContainer.Add(resetButton);
+
+				container.Add(keyContainer).SetFillX().SetAlign(Align.Right);
+
+				container.Row();
+			}
+
 			AddSectionLabel(scrollingContent, "Audio");
 			var musicSlider = AddSliderOption(scrollingContent, "Music", GameOptions.Instance.MusicVolume, val => state.MusicVolume = val);
 			var soundSlider = AddSliderOption(scrollingContent, "Sound Effects", GameOptions.Instance.SoundVolume, val => state.SoundVolume = val);
@@ -129,103 +225,6 @@ namespace Neztris.Scenes.MainMenu
 
 			return dialog;
 		}
-
-		private static void AddSectionLabel(Table container, string caption)
-		{
-			var label = new Label(caption);
-			label.SetAlignment(Align.Center);
-			container.Add(label).SetColspan(3).SetPadTop(8).SetPadBottom(8);
-
-			container.Row();
-		}
-
-		private static Slider AddSliderOption(Table container, string label, float initialValue, Action<float> updateAction)
-		{
-			container.Add(label).SetAlign(Align.Left);
-
-			container.Add().SetExpandX();
-
-			var slider = new Slider(s_defaultSkin, null, 0, 1, 0.1f);
-			slider.SetValue(initialValue);
-			slider.OnChanged += updateAction;
-			container.Add(slider).SetAlign(Align.Right).SetPadRight(8);
-
-			container.Row();
-
-			return slider;
-		}
-
-		private static void AddInputActionOption(Table container, UIState state, InputAction action)
-		{
-			container.Add(action.Title).SetAlign(Align.Left);
-
-			container.Add().SetExpandX();
-
-			var keyContainer = new Table();
-			keyContainer.Right();
-			keyContainer.Defaults().SetSpaceRight(4);
-
-			var keyLabel = new Label(action.ActualKey.ToString());
-			keyLabel.SetAlignment(Align.Right);
-			keyContainer.Add(keyLabel);
-
-			var editButton = new TextButton("Edit", s_defaultSkin);
-			editButton.OnClicked += button =>
-			{
-				state.OptionsMenu.SetIsVisible(false);
-
-				var reassignDialog = new Dialog("Reassign Action", s_defaultSkin);
-				reassignDialog.SetWidth(250);
-
-				var captionLabel = new Label($"Press any key to use for \"{action.Title}\".\nOr press Escape to cancel.");
-				reassignDialog.GetContentTable().Add(captionLabel).Pad(8);
-
-				reassignDialog.SetPosition(
-					Game.ViewportWidth / 2 - reassignDialog.width / 2,
-					Game.ViewportHeight / 2 - reassignDialog.height / 2
-				);
-				container.GetStage().AddElement(reassignDialog);
-
-				IEnumerator RebindControl(InputAction action, Label keyLabel, Dialog reassignDialog, UIState state)
-				{
-					while (true)
-					{
-						var pressedKeys = Input.CurrentKeyboardState.GetPressedKeys();
-						if (pressedKeys.Length != 0)
-						{
-							if (!pressedKeys.Contains(Keys.Escape))
-							{
-								action.OverrideKey = pressedKeys[0];
-								keyLabel.SetText(action.ActualKey.ToString());
-							}
-							reassignDialog.Remove();
-							state.OptionsMenu.SetIsVisible(true);
-							break;
-						}
-						else
-						{
-							yield return null;
-						}
-					}
-				}
-
-				Core.StartCoroutine(RebindControl(action, keyLabel, reassignDialog, state));
-			};
-			keyContainer.Add(editButton);
-
-			var resetButton = new TextButton("Reset", s_defaultSkin);
-			resetButton.OnClicked += button =>
-			{
-				action.OverrideKey = null;
-				keyLabel.SetText(action.ActualKey.ToString());
-			};
-			keyContainer.Add(resetButton);
-			
-			container.Add(keyContainer).SetFillX().SetAlign(Align.Right);
-
-			container.Row();
-		}
-
 
 		private sealed class UIState: Component
 		{
