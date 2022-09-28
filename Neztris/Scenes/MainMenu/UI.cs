@@ -60,11 +60,13 @@ namespace Neztris.Scenes.MainMenu
 			}
 
 			var playButton = CreateAndAddMainMenuButton("Play", "Start the game", button => onPlay());
-			var optionsButton = CreateAndAddMainMenuButton("Options", "Open the options menu", button => state.IsOptionsMenuVisible = true);
+			var highScoresButton = CreateAndAddMainMenuButton("High Scores", "View the recent high scores for the game", button => Console.WriteLine("High Scores!"));
+			var optionsButton = CreateAndAddMainMenuButton("Options", "Open the options menu", button => state.CurentMenuState = ExclusiveMenuState.Options);
 			var exitButton = CreateAndAddMainMenuButton("Exit", "Exit the game", button => onExit());
 
-			playButton.EnableExplicitFocusableControl(exitButton, optionsButton, null, null);
-			optionsButton.EnableExplicitFocusableControl(playButton, exitButton, null, null);
+			playButton.EnableExplicitFocusableControl(exitButton, highScoresButton, null, null);
+			highScoresButton.EnableExplicitFocusableControl(playButton, optionsButton, null, null);
+			optionsButton.EnableExplicitFocusableControl(highScoresButton, exitButton, null, null);
 			exitButton.EnableExplicitFocusableControl(optionsButton, playButton, null, null);
 
 			canvas.Stage.SetGamepadFocusElement(playButton);
@@ -105,12 +107,12 @@ namespace Neztris.Scenes.MainMenu
 			saveButton.OnClicked += button =>
 			{
 				state.UpdateOptions();
-				state.IsOptionsMenuVisible = false;
+				state.CurentMenuState = ExclusiveMenuState.Main;
 			};
 			dialog.GetButtonTable().Add(saveButton);
 
 			var backButton = new TextButton("Back", s_defaultSkin);
-			backButton.OnClicked += button => state.IsOptionsMenuVisible = false;
+			backButton.OnClicked += button => state.CurentMenuState = ExclusiveMenuState.Main;
 			dialog.GetButtonTable().Add(backButton);
 
 			musicSlider.EnableExplicitFocusableControl(backButton, soundSlider, null, null);
@@ -243,24 +245,31 @@ namespace Neztris.Scenes.MainMenu
 			public Slider MusicSlider { get; set; }
 			public Slider SoundSlider { get; set; }
 
-			public bool IsOptionsMenuVisible
+			public ExclusiveMenuState CurentMenuState
 			{
-				get => OptionsMenu.IsVisible();
+				get => m_currentMenuState;
 				set
 				{
-					if (value != OptionsMenu.IsVisible())
+					if (value != m_currentMenuState)
 					{
 						var stage = MainMenu.GetStage();
-						stage.UnfocusAll();
-
-						MainMenu.SetIsVisible(!value);
-						OptionsMenu.SetIsVisible(value);
+						MainMenu.SetIsVisible(false);
+						OptionsMenu.SetIsVisible(false);
 
 						TooltipManager.GetInstance().HideAll();
-						if (value)
-							stage.SetGamepadFocusElement(MusicSlider);
-						else
-							stage.SetGamepadFocusElement(PlayButton);
+
+						m_currentMenuState = value;
+						switch (m_currentMenuState)
+						{
+							case ExclusiveMenuState.Main:
+								MainMenu.SetIsVisible(true);
+								stage.SetGamepadFocusElement(PlayButton);
+								break;
+							case ExclusiveMenuState.Options:
+								OptionsMenu.SetIsVisible(true);
+								stage.SetGamepadFocusElement(MusicSlider);
+								break;
+						};
 					}
 				}
 			}
@@ -275,10 +284,18 @@ namespace Neztris.Scenes.MainMenu
 
 			public float MusicVolume { get; internal set; } = 0.5f;
 			public float SoundVolume { get; internal set; } = 0.5f;
+
+			private ExclusiveMenuState m_currentMenuState = ExclusiveMenuState.Main; 
 		};
 
 		private static readonly Skin s_defaultSkin = Skin.CreateDefaultSkin();
 
 		private const int c_screenSpaceRenderLayer = 999;
+
+		private enum ExclusiveMenuState
+		{
+			Main,
+			Options
+		}
 	}
 }
