@@ -24,6 +24,7 @@ namespace Neztris.Scenes.MainMenu
 			var uiState = new UIState();
 			uiState.MainMenu = CreateMainMenu(canvas, uiState, onPlay, onExit);
 			uiState.OptionsMenu = CreateOptionsMenu(canvas, uiState);
+			uiState.HighScoresView = CreateHighScoresView(canvas, uiState);
 
 			entity.AddComponent(uiState);
 
@@ -226,6 +227,30 @@ namespace Neztris.Scenes.MainMenu
 			return dialog;
 		}
 
+		private static Table CreateHighScoresView(UICanvas canvas, UIState state)
+		{
+			var table = new Table();
+			table.Pad(16);
+			table.SetFillParent(true);
+			table.Center();
+			table.SetIsVisible(false);
+			canvas.Stage.AddElement(table);
+
+			table.Row().SetFillX().Pad(0.0f, 0.0f, 32.0f, 0.0f);
+
+			var titleLabel = new Label("High Scores");
+			titleLabel.SetFontScale(3.0f);
+			titleLabel.SetFontColor(Color.CadetBlue);
+			table.Add(titleLabel);
+
+			table.Row().SetFillX();
+
+			var backButton = new TextButton("Back", s_defaultSkin);
+			table.Add(backButton);
+
+			return table;
+		}
+
 		private sealed class UIState: Component
 		{
 			public UIState()
@@ -237,6 +262,7 @@ namespace Neztris.Scenes.MainMenu
 
 			public Table MainMenu { get; set; }
 			public Dialog OptionsMenu { get; set; }
+			public Table HighScoresView { get; set; }
 
 			public TextButton PlayButton { private get; set; }
 			public TextButton OptionsButton { get; set; }
